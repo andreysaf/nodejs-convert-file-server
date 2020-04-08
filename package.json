@@ -1,0 +1,11 @@
+{
+  "name": "nodejs-custom-server",
+  "version": "1.0.0",
+  "description": "This is an example how to use PDFTron Custom Server - Node JS SDK",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
