@@ -115,6 +115,45 @@ app.get('/thumbnail/:filename', (req, res) => {
     });
 });
 
+app.get('/convert/:filename', (req, res) => {
+  const pathname = './files/';
+  const filename = req.params.filename;
+  let ext = path.parse(pathname + filename).ext;
+
+  if (ext === '.pdf') {
+    res.statusCode = 500;
+    res.end(`File is already PDF.`);
+  }
+
+  const main = async () => {
+    const pdfdoc = await PDFNet.PDFDoc.create();
+    await pdfdoc.initSecurityHandler();
+    const inputFile = pathname+filename;
+    await PDFNet.Convert.toPdf(pdfdoc, inputFile);
+    pdfdoc.save(`${pathname}${filename}.pdf`, PDFNet.SDFDoc.SaveOptions.e_linearized);
+    ext = '.pdf';
+  };
+
+  PDFNet.runWithCleanup(main)
+    .catch(function (error) {
+      res.statusCode = 500;
+      res.end(`Error : ${JSON.stringify(error)}.`);
+    })
+    .then(function () {
+      PDFNet.shutdown();
+      const newpath = `${pathname}${filename}.pdf`;
+      fs.readFile(newpath, function (err, data) {
+        if (err) {
+          res.statusCode = 500;
+          res.end(`Error getting the file: ${err}.`);
+        } else {
+          res.setHeader('Content-type', mimeType[ext] || 'text/plain');
+          res.end(data);
+        }
+      });
+    });
+});
+
 app.get('/files/:filename', (req, res) => {
   const pathname = `./files/${req.params.filename}`;
   fs.readFile(pathname, function (err, data) {
