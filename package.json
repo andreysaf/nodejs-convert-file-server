@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@pdftron/pdfnet-node": "^7.1.1",
     "express": "^4.17.1",
     "nodemon": "^2.0.3"
   }
