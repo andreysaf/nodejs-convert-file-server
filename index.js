@@ -50,9 +50,20 @@ http
           if (err) {
             return console.log('Unable to scan directory: ' + err);
           }
+
+          var index = pathname.lastIndexOf('/');
+          var reqPath = pathname.substring(index + 1);
+
+          if (reqPath === 'files') {
+            res.setHeader('Content-type', mimeType['.json'])
+            res.end(JSON.stringify(files));
+          } else {
+            res.writeHead(404, {
+              'Content-type': 'text/html'
+            });
+            res.end(`<h1>Incorrect Request</h1>`);
+          }
           
-          res.setHeader('Content-type', mimeType['.json'])
-          res.end(JSON.stringify(files));
         });
       }
 
