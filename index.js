@@ -20,6 +20,12 @@ app.get('/files', (req, res) => {
 app.get('/optimize/:filename', (req, res) => {
   const pathname = './files/';
   const filename = req.params.filename;
+  const ext = path.parse(pathname + filename).ext;
+
+  if (ext !== '.pdf') {
+    res.statusCode = 500;
+    res.end(`Only PDFs can be optimized. Cannot optimize file with extension: ${ext}.`);
+  }
 
   const main = async () => {
     const doc = await PDFNet.PDFDoc.createFromFilePath(pathname+filename);
@@ -49,10 +55,8 @@ app.get('/optimize/:filename', (req, res) => {
     await doc.saveViewerOptimized(`${pathname}optimized_${filename}`, opts);
   };
   
-  // add your own license key as the second parameter, e.g. PDFNet.runWithCleanup(main, 'YOUR_LICENSE_KEY')
   PDFNet.runWithCleanup(main)
     .catch(function (error) {
-      console.log('Error: ' + JSON.stringify(error));
       res.statusCode = 500;
       res.end(`Error : ${JSON.stringify(error)}.`);
     })
@@ -64,8 +68,46 @@ app.get('/optimize/:filename', (req, res) => {
           res.statusCode = 500;
           res.end(`Error getting the file: ${err}.`);
         } else {
-          const ext = path.parse(newpath).ext;
-          // if the file is found, set Content-type and send data
+          res.setHeader('Content-type', mimeType[ext] || 'text/plain');
+          res.end(data);
+        }
+      });
+    });
+});
+
+app.get('/thumbnail/:filename', (req, res) => {
+  const pathname = './files/';
+  const filename = req.params.filename;
+  let ext = path.parse(pathname + filename).ext;
+
+  if (ext !== '.pdf') {
+    res.statusCode = 500;
+    res.end(`Only PDFs can return a thumbnail. Cannot return a thumb for a file with extension: ${ext}.`);
+  }
+
+  const main = async () => {
+    const doc = await PDFNet.PDFDoc.createFromFilePath(pathname+filename);
+    await doc.initSecurityHandler();
+    const pdfdraw = await PDFNet.PDFDraw.create(92);
+    const itr = await doc.getPageIterator(1);
+    const currPage = await itr.current();
+    await pdfdraw.export(currPage, `${pathname}${filename}.png`, 'PNG');
+    ext = '.png';
+  };
+
+  PDFNet.runWithCleanup(main)
+    .catch(function (error) {
+      res.statusCode = 500;
+      res.end(`Error : ${JSON.stringify(error)}.`);
+    })
+    .then(function () {
+      PDFNet.shutdown();
+      const newpath = `${pathname}${filename}.png`;
+      fs.readFile(newpath, function (err, data) {
+        if (err) {
+          res.statusCode = 500;
+          res.end(`Error getting the file: ${err}.`);
+        } else {
           res.setHeader('Content-type', mimeType[ext] || 'text/plain');
           res.end(data);
         }
@@ -81,7 +123,6 @@ app.get('/files/:filename', (req, res) => {
       res.end(`Error getting the file: ${err}.`);
     } else {
       const ext = path.parse(pathname).ext;
-      // if the file is found, set Content-type and send data
       res.setHeader('Content-type', mimeType[ext] || 'text/plain');
       res.end(data);
     }
