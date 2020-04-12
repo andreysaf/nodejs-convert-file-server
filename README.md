@@ -42,7 +42,7 @@ The endpoint converts the file to a PDF. Conversion is possible for the followin
 ##### HTTP Request
 `GET http://localhost:9000/convert/:filename`
 
-#### Optimize to PDF
+#### Optimize PDF
 
 The endpoint converts the PDF to an optimized PDF to be used with [PDFTron WebViewer](https://www.pdftron.com/webviewer/demo/). Uses [PDFTron Node.js API](https://www.pdftron.com/api/pdfnet-node/PDFNet.PDFDoc.html#saveViewerOptimized__anchor).
 
