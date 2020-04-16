@@ -49,25 +49,9 @@ app.get('/optimize/:filename', (req, res) => {
   
     await doc.saveViewerOptimized(`${pathname}optimized_${filename}`, opts);
   };
-  
-  PDFNet.runWithCleanup(main)
-    .catch(function (error) {
-      res.statusCode = 500;
-      res.end(`Error : ${JSON.stringify(error)}.`);
-    })
-    .then(function () {
-      PDFNet.shutdown();
-      const newpath = `${pathname}optimized_${filename}`;
-      fs.readFile(newpath, function (err, data) {
-        if (err) {
-          res.statusCode = 500;
-          res.end(`Error getting the file: ${err}.`);
-        } else {
-          res.setHeader('Content-type', mimeType[ext] || 'text/plain');
-          res.end(data);
-        }
-      });
-    });
+
+  const newpath = `${pathname}optimized_${filename}`;
+  PDFNetEndpoint(main, newpath, res);
 });
 
 app.get('/thumbnail/:filename', (req, res) => {
@@ -87,27 +71,10 @@ app.get('/thumbnail/:filename', (req, res) => {
     const itr = await doc.getPageIterator(1);
     const currPage = await itr.current();
     await pdfdraw.export(currPage, `${pathname}${filename}.png`, 'PNG');
-    ext = '.png';
   };
 
-  PDFNet.runWithCleanup(main)
-    .catch(function (error) {
-      res.statusCode = 500;
-      res.end(`Error : ${JSON.stringify(error)}.`);
-    })
-    .then(function () {
-      PDFNet.shutdown();
-      const newpath = `${pathname}${filename}.png`;
-      fs.readFile(newpath, function (err, data) {
-        if (err) {
-          res.statusCode = 500;
-          res.end(`Error getting the file: ${err}.`);
-        } else {
-          res.setHeader('Content-type', mimeType[ext] || 'text/plain');
-          res.end(data);
-        }
-      });
-    });
+  const newpath = `${pathname}${filename}.png`;
+  PDFNetEndpoint(main, newpath, res);
 });
 
 app.get('/convert/:filename', (req, res) => {
@@ -129,24 +96,8 @@ app.get('/convert/:filename', (req, res) => {
     ext = '.pdf';
   };
 
-  PDFNet.runWithCleanup(main)
-    .catch(function (error) {
-      res.statusCode = 500;
-      res.end(`Error : ${JSON.stringify(error)}.`);
-    })
-    .then(function () {
-      PDFNet.shutdown();
-      const newpath = `${pathname}${filename}.pdf`;
-      fs.readFile(newpath, function (err, data) {
-        if (err) {
-          res.statusCode = 500;
-          res.end(`Error getting the file: ${err}.`);
-        } else {
-          res.setHeader('Content-type', mimeType[ext] || 'text/plain');
-          res.end(data);
-        }
-      });
-    });
+  const newpath = `${pathname}${filename}.pdf`;
+  PDFNetEndpoint(main, newpath, res);
 });
 
 app.get('/files/:filename', (req, res) => {
@@ -162,6 +113,27 @@ app.get('/files/:filename', (req, res) => {
     }
   });
 });
+
+const PDFNetEndpoint = (main, pathname, res) => {
+    PDFNet.runWithCleanup(main)
+    .catch(function (error) {
+      res.statusCode = 500;
+      res.end(`Error : ${JSON.stringify(error)}.`);
+    })
+    .then(function () {
+      PDFNet.shutdown();
+      fs.readFile(pathname, function (err, data) {
+        if (err) {
+          res.statusCode = 500;
+          res.end(`Error getting the file: ${err}.`);
+        } else {
+          const ext = path.parse(pathname).ext;
+          res.setHeader('Content-type', mimeType[ext] || 'text/plain');
+          res.end(data);
+        }
+      });
+    });
+};
 
 app.listen(port, () =>
   console.log(
