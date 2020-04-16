@@ -33,7 +33,6 @@ app.get('/optimize/:filename', (req, res) => {
   
     // compress
     const image_settings = new PDFNet.Optimizer.ImageSettings();
-  
     image_settings.setCompressionMode(
       PDFNet.Optimizer.ImageSettings.CompressionMode.e_jpeg,
     );
@@ -43,12 +42,8 @@ app.get('/optimize/:filename', (req, res) => {
     opt_settings.setGrayscaleImageSettings(image_settings);
   
     await PDFNet.Optimizer.optimize(doc, opt_settings);
-  
-    // flattener
-    const fl = await PDFNet.Flattener.create();
-    await fl.process(doc, PDFNet.Flattener.Mode.e_fast);
-  
-    // viewer optimizer
+
+    // viewer optimizer + linearization
     const opts = new PDFNet.PDFDoc.ViewerOptimizedOptions();
     opts.setThumbnailRenderingThreshold(0);
   
