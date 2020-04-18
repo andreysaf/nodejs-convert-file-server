@@ -68,8 +68,7 @@ app.get('/thumbnail/:filename', (req, res) => {
     const doc = await PDFNet.PDFDoc.createFromFilePath(pathname+filename);
     await doc.initSecurityHandler();
     const pdfdraw = await PDFNet.PDFDraw.create(92);
-    const itr = await doc.getPageIterator(1);
-    const currPage = await itr.current();
+    const currPage = await doc.getPage(1);
     await pdfdraw.export(currPage, `${pathname}${filename}.png`, 'PNG');
   };
 
