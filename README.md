@@ -49,6 +49,13 @@ The endpoint converts the PDF to an optimized PDF to be used with [PDFTron WebVi
 ##### HTTP Request
 `GET http://localhost:9000/optimize/:filename`
 
+### Extract Text from a PDF
+
+Returns text from a PDF at a specified page number.
+
+##### HTTP Request
+`GET http://localhost:9000/optimize/:filename-:pagenumber`
+
 
 
 
