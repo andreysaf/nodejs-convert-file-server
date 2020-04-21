@@ -45,10 +45,7 @@ app.get('/optimize/:filename', (req, res) => {
   );
 
   if (ext !== '.pdf') {
-    res.statusCode = 500;
-    res.end(
-      `Only PDFs can be optimized. Cannot optimize file with extension: ${ext}.`,
-    );
+    throw `Only PDFs can be optimized. Cannot optimize file with extension: ${ext}.`;
   }
 
   const main = async () => {
@@ -85,10 +82,7 @@ app.get('/thumbnail/:filename', (req, res) => {
   const outputPath = path.resolve(__dirname, filesPath, `${filename}.png`);
 
   if (ext !== '.pdf') {
-    res.statusCode = 500;
-    res.end(
-      `Only PDFs can return a thumbnail. Cannot return a thumb for a file with extension: ${ext}.`,
-    );
+    throw `Only PDFs can return a thumbnail. Cannot return a thumb for a file with extension: ${ext}.`;
   }
 
   const main = async () => {
@@ -144,14 +138,12 @@ app.get('/textextract/:filename-:pagenumber', (req, res) => {
   const main = async () => {
     await PDFNet.initialize();
     try {
-      await PDFNet.startDeallocateStack();
       const pdfdoc = await PDFNet.PDFDoc.createFromFilePath(inputPath);
       await pdfdoc.initSecurityHandler();
       const page = await pdfdoc.getPage(pageNumber);
 
-      if (page.id === '0') {
-        console.log('Page not found.');
-        return 1;
+      if (!page) {
+        throw 'Page number is invalid.';
       }
 
       const txt = await PDFNet.TextExtractor.create();
@@ -163,11 +155,8 @@ app.get('/textextract/:filename-:pagenumber', (req, res) => {
       fs.writeFile(outputPath, text, (err) => {
         if (err) return console.log(err);
       });
-      await PDFNet.endDeallocateStack();
     } catch (err) {
-      console.log(err);
-      console.log(err.stack);
-      return 1;
+      throw err;
     }
   };
 
@@ -176,13 +165,9 @@ app.get('/textextract/:filename-:pagenumber', (req, res) => {
 
 const PDFNetEndpoint = (main, pathname, res) => {
   PDFNet.runWithCleanup(main)
-    .catch(function (error) {
-      res.statusCode = 500;
-      res.end(`Error : ${JSON.stringify(error)}.`);
-    })
-    .then(function () {
+    .then(() => {
       PDFNet.shutdown();
-      fs.readFile(pathname, function (err, data) {
+      fs.readFile(pathname, (err, data) => {
         if (err) {
           res.statusCode = 500;
           res.end(`Error getting the file: ${err}.`);
@@ -192,6 +177,10 @@ const PDFNetEndpoint = (main, pathname, res) => {
           res.end(data);
         }
       });
+    })
+    .catch((error) => {
+      res.statusCode = 500;
+      res.end(error);
     });
 };
 
