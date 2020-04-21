@@ -36,35 +36,41 @@ app.get('/files/:filename', (req, res) => {
 app.get('/optimize/:filename', (req, res) => {
   const filename = req.params.filename;
   const ext = path.parse(filename).ext;
-  
+
   const inputPath = path.resolve(__dirname, filesPath, filename);
-  const outputPath = path.resolve(__dirname, filesPath, `optimized_${filename}`);
+  const outputPath = path.resolve(
+    __dirname,
+    filesPath,
+    `optimized_${filename}`,
+  );
 
   if (ext !== '.pdf') {
     res.statusCode = 500;
-    res.end(`Only PDFs can be optimized. Cannot optimize file with extension: ${ext}.`);
+    res.end(
+      `Only PDFs can be optimized. Cannot optimize file with extension: ${ext}.`,
+    );
   }
 
   const main = async () => {
     const doc = await PDFNet.PDFDoc.createFromFilePath(inputPath);
     await doc.initSecurityHandler();
-  
+
     // compress
     const image_settings = new PDFNet.Optimizer.ImageSettings();
     image_settings.setCompressionMode(
       PDFNet.Optimizer.ImageSettings.CompressionMode.e_jpeg,
     );
-  
+
     const opt_settings = new PDFNet.Optimizer.OptimizerSettings();
     opt_settings.setColorImageSettings(image_settings);
     opt_settings.setGrayscaleImageSettings(image_settings);
-  
+
     await PDFNet.Optimizer.optimize(doc, opt_settings);
 
     // viewer optimizer + linearization
     const opts = new PDFNet.PDFDoc.ViewerOptimizedOptions();
     opts.setThumbnailRenderingThreshold(0);
-  
+
     await doc.saveViewerOptimized(outputPath, opts);
   };
 
@@ -80,7 +86,9 @@ app.get('/thumbnail/:filename', (req, res) => {
 
   if (ext !== '.pdf') {
     res.statusCode = 500;
-    res.end(`Only PDFs can return a thumbnail. Cannot return a thumb for a file with extension: ${ext}.`);
+    res.end(
+      `Only PDFs can return a thumbnail. Cannot return a thumb for a file with extension: ${ext}.`,
+    );
   }
 
   const main = async () => {
@@ -110,15 +118,83 @@ app.get('/convert/:filename', (req, res) => {
     const pdfdoc = await PDFNet.PDFDoc.create();
     await pdfdoc.initSecurityHandler();
     await PDFNet.Convert.toPdf(pdfdoc, inputPath);
-    pdfdoc.save(`${pathname}${filename}.pdf`, PDFNet.SDFDoc.SaveOptions.e_linearized);
+    pdfdoc.save(
+      `${pathname}${filename}.pdf`,
+      PDFNet.SDFDoc.SaveOptions.e_linearized,
+    );
     ext = '.pdf';
   };
 
   PDFNetEndpoint(main, outputPath, res);
 });
 
+app.get('/textextract/:filename-:outext-:pagenumber', (req, res) => {
+  const filename = req.params.filename;
+  let outputExt = req.params.outext;
+  let pageNumber = Number(req.params.pagenumber);
+  let ext = path.parse(filename).ext;
+
+  if (ext !== '.pdf') {
+    res.statusCode = 500;
+    res.end(`File is not a PDF. Please convert it first.`);
+  }
+
+  if (!outputExt) {
+    outputExt = 'txt';
+  }
+
+  const inputPath = path.resolve(__dirname, filesPath, filename);
+  const outputPath = path.resolve(
+    __dirname,
+    filesPath,
+    `${filename}.${outputExt}`,
+  );
+
+  const main = async () => {
+    await PDFNet.initialize();
+    try {
+      await PDFNet.startDeallocateStack();
+      const pdfdoc = await PDFNet.PDFDoc.createFromFilePath(inputPath);
+      await pdfdoc.initSecurityHandler();
+      const page = await pdfdoc.getPage(pageNumber);
+
+      if (page.id === '0') {
+        console.log('Page not found.');
+        return 1;
+      }
+
+      const txt = await PDFNet.TextExtractor.create();
+      const rect = new PDFNet.Rect(0, 0, 612, 794);
+      txt.begin(page, rect);
+      let text;
+      if (outputExt === 'xml') {
+        text = await txt.getAsXML(
+          PDFNet.TextExtractor.XMLOutputFlags.e_words_as_elements |
+            PDFNet.TextExtractor.XMLOutputFlags.e_output_bbox |
+            PDFNet.TextExtractor.XMLOutputFlags.e_output_style_info,
+        );
+        fs.writeFile(outputPath, text, (err) => {
+          if (err) return console.log(err);
+        });
+      } else {
+        text = await txt.getAsText();
+        fs.writeFile(outputPath, text, (err) => {
+          if (err) return console.log(err);
+        });
+      }
+      await PDFNet.endDeallocateStack();
+    } catch (err) {
+      console.log(err);
+      console.log(err.stack);
+      return 1;
+    }
+  };
+
+  PDFNetEndpoint(main, outputPath, res);
+});
+
 const PDFNetEndpoint = (main, pathname, res) => {
-    PDFNet.runWithCleanup(main)
+  PDFNet.runWithCleanup(main)
     .catch(function (error) {
       res.statusCode = 500;
       res.end(`Error : ${JSON.stringify(error)}.`);
