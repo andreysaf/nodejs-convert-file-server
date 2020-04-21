@@ -128,9 +128,8 @@ app.get('/convert/:filename', (req, res) => {
   PDFNetEndpoint(main, outputPath, res);
 });
 
-app.get('/textextract/:filename-:outext-:pagenumber', (req, res) => {
+app.get('/textextract/:filename-:pagenumber', (req, res) => {
   const filename = req.params.filename;
-  let outputExt = req.params.outext;
   let pageNumber = Number(req.params.pagenumber);
   let ext = path.parse(filename).ext;
 
@@ -139,16 +138,8 @@ app.get('/textextract/:filename-:outext-:pagenumber', (req, res) => {
     res.end(`File is not a PDF. Please convert it first.`);
   }
 
-  if (!outputExt) {
-    outputExt = 'txt';
-  }
-
   const inputPath = path.resolve(__dirname, filesPath, filename);
-  const outputPath = path.resolve(
-    __dirname,
-    filesPath,
-    `${filename}.${outputExt}`,
-  );
+  const outputPath = path.resolve(__dirname, filesPath, `${filename}.txt`);
 
   const main = async () => {
     await PDFNet.initialize();
@@ -167,21 +158,11 @@ app.get('/textextract/:filename-:outext-:pagenumber', (req, res) => {
       const rect = new PDFNet.Rect(0, 0, 612, 794);
       txt.begin(page, rect);
       let text;
-      if (outputExt === 'xml') {
-        text = await txt.getAsXML(
-          PDFNet.TextExtractor.XMLOutputFlags.e_words_as_elements |
-            PDFNet.TextExtractor.XMLOutputFlags.e_output_bbox |
-            PDFNet.TextExtractor.XMLOutputFlags.e_output_style_info,
-        );
-        fs.writeFile(outputPath, text, (err) => {
-          if (err) return console.log(err);
-        });
-      } else {
-        text = await txt.getAsText();
-        fs.writeFile(outputPath, text, (err) => {
-          if (err) return console.log(err);
-        });
-      }
+
+      text = await txt.getAsText();
+      fs.writeFile(outputPath, text, (err) => {
+        if (err) return console.log(err);
+      });
       await PDFNet.endDeallocateStack();
     } catch (err) {
       console.log(err);

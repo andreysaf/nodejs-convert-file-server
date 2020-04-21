@@ -1,0 +1,42 @@
+A lower-quality library also encounters
+performance and memory issues, such as large
+documents with frustratingly long wait times for
+your users as well as complex documents that
+crash the viewer. This is often due to the absence
+of features such as PDF tiling, parallelization,
+and linearization that a more mature PDF SDK
+will incorporate.
+Some solutions (e.g., image servers) perform
+excellently when tested on a small number of
+documents and users but then inflict unexpected
+hidden costs when scaled up. When hundreds
+or thousands of users later view, mark up, comment
+on, and otherwise interact with (i.e.,scroll,
+pan, and zoom) documents, server resource and
+network data usage explodes. To maintain your
+desired UX, you have to pay higher fees or invest
+in more servers.
+The following types of documents have much
+more demanding rendering requirements:
+• CAD-based PDFs such as construction and
+engineering drawings with very large and
+complex designs.
+• Reports, textbooks, and marketing material
+using advanced PDF graphics such as shadings,
+gradients, soft masks, and patterns.
+• Geospatial maps with OCG layers that are
+switched off by default.
+• Pre-press documents which require an SDK
+with advanced color management features to
+print colors accurately.
+• High-speed accurate rendering (especially on
+native mobile apps and mobile browsers).
+• Context extraction of tables, text, etc. with
+document structure (e.g., text read order or
+table arrangement) in tact.
+To prevent crashes, slowness, and rendering
+issues from disrupting your UX, test functionality
+with the types of documents your users will work
+with. Also test a server-based solution at the
+anticipated load and usage.
+6
