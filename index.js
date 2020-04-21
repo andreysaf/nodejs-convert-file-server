@@ -4,11 +4,13 @@ const path = require('path');
 const { PDFNet } = require('@pdftron/pdfnet-node');
 const mimeType = require('./modules/mimeType');
 const port = 9000;
+const filesPath = './files';
 
 const app = express();
 
 app.get('/files', (req, res) => {
-  fs.readdir('./files', function (err, files) {
+  const inputPath = path.resolve(__dirname, filesPath);
+  fs.readdir(inputPath, function (err, files) {
     if (err) {
       return console.log('Unable to scan directory: ' + err);
     }
@@ -17,10 +19,26 @@ app.get('/files', (req, res) => {
   });
 });
 
+app.get('/files/:filename', (req, res) => {
+  const inputPath = path.resolve(__dirname, filesPath, req.params.filename);
+  fs.readFile(inputPath, function (err, data) {
+    if (err) {
+      res.statusCode = 500;
+      res.end(`Error getting the file: ${err}.`);
+    } else {
+      const ext = path.parse(inputPath).ext;
+      res.setHeader('Content-type', mimeType[ext] || 'text/plain');
+      res.end(data);
+    }
+  });
+});
+
 app.get('/optimize/:filename', (req, res) => {
-  const pathname = './files/';
   const filename = req.params.filename;
-  const ext = path.parse(pathname + filename).ext;
+  const ext = path.parse(filename).ext;
+  
+  const inputPath = path.resolve(__dirname, filesPath, filename);
+  const outputPath = path.resolve(__dirname, filesPath, `optimized_${filename}`);
 
   if (ext !== '.pdf') {
     res.statusCode = 500;
@@ -28,7 +46,7 @@ app.get('/optimize/:filename', (req, res) => {
   }
 
   const main = async () => {
-    const doc = await PDFNet.PDFDoc.createFromFilePath(pathname+filename);
+    const doc = await PDFNet.PDFDoc.createFromFilePath(inputPath);
     await doc.initSecurityHandler();
   
     // compress
@@ -47,17 +65,18 @@ app.get('/optimize/:filename', (req, res) => {
     const opts = new PDFNet.PDFDoc.ViewerOptimizedOptions();
     opts.setThumbnailRenderingThreshold(0);
   
-    await doc.saveViewerOptimized(`${pathname}optimized_${filename}`, opts);
+    await doc.saveViewerOptimized(outputPath, opts);
   };
 
-  const newpath = `${pathname}optimized_${filename}`;
-  PDFNetEndpoint(main, newpath, res);
+  PDFNetEndpoint(main, outputPath, res);
 });
 
 app.get('/thumbnail/:filename', (req, res) => {
-  const pathname = './files/';
   const filename = req.params.filename;
-  let ext = path.parse(pathname + filename).ext;
+  let ext = path.parse(filename).ext;
+
+  const inputPath = path.resolve(__dirname, filesPath, filename);
+  const outputPath = path.resolve(__dirname, filesPath, `${filename}.png`);
 
   if (ext !== '.pdf') {
     res.statusCode = 500;
@@ -65,21 +84,22 @@ app.get('/thumbnail/:filename', (req, res) => {
   }
 
   const main = async () => {
-    const doc = await PDFNet.PDFDoc.createFromFilePath(pathname+filename);
+    const doc = await PDFNet.PDFDoc.createFromFilePath(inputPath);
     await doc.initSecurityHandler();
     const pdfdraw = await PDFNet.PDFDraw.create(92);
     const currPage = await doc.getPage(1);
-    await pdfdraw.export(currPage, `${pathname}${filename}.png`, 'PNG');
+    await pdfdraw.export(currPage, outputPath, 'PNG');
   };
 
-  const newpath = `${pathname}${filename}.png`;
-  PDFNetEndpoint(main, newpath, res);
+  PDFNetEndpoint(main, outputPath, res);
 });
 
 app.get('/convert/:filename', (req, res) => {
-  const pathname = './files/';
   const filename = req.params.filename;
-  let ext = path.parse(pathname + filename).ext;
+  let ext = path.parse(filename).ext;
+
+  const inputPath = path.resolve(__dirname, filesPath, filename);
+  const outputPath = path.resolve(__dirname, filesPath, `${filename}.pdf`);
 
   if (ext === '.pdf') {
     res.statusCode = 500;
@@ -89,28 +109,12 @@ app.get('/convert/:filename', (req, res) => {
   const main = async () => {
     const pdfdoc = await PDFNet.PDFDoc.create();
     await pdfdoc.initSecurityHandler();
-    const inputFile = pathname+filename;
-    await PDFNet.Convert.toPdf(pdfdoc, inputFile);
+    await PDFNet.Convert.toPdf(pdfdoc, inputPath);
     pdfdoc.save(`${pathname}${filename}.pdf`, PDFNet.SDFDoc.SaveOptions.e_linearized);
     ext = '.pdf';
   };
 
-  const newpath = `${pathname}${filename}.pdf`;
-  PDFNetEndpoint(main, newpath, res);
-});
-
-app.get('/files/:filename', (req, res) => {
-  const pathname = `./files/${req.params.filename}`;
-  fs.readFile(pathname, function (err, data) {
-    if (err) {
-      res.statusCode = 500;
-      res.end(`Error getting the file: ${err}.`);
-    } else {
-      const ext = path.parse(pathname).ext;
-      res.setHeader('Content-type', mimeType[ext] || 'text/plain');
-      res.end(data);
-    }
-  });
+  PDFNetEndpoint(main, outputPath, res);
 });
 
 const PDFNetEndpoint = (main, pathname, res) => {
