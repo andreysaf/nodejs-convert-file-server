@@ -113,10 +113,28 @@ app.get('/convert/:filename', (req, res) => {
     await pdfdoc.initSecurityHandler();
     await PDFNet.Convert.toPdf(pdfdoc, inputPath);
     pdfdoc.save(
-      `${pathname}${filename}.pdf`,
+      outputPath,
       PDFNet.SDFDoc.SaveOptions.e_linearized,
     );
-    ext = '.pdf';
+  };
+
+  PDFNetEndpoint(main, outputPath, res);
+});
+
+app.get('/generate/:filename', (req, res) => {
+  const filename = req.params.filename;
+  console.log(filename);
+  const outputPath = path.resolve(__dirname, filesPath, `${filename}.pdf`);
+  console.log(outputPath);
+  const main = async () => {
+    const pdfdoc = await PDFNet.PDFDoc.create();
+    await pdfdoc.initSecurityHandler();
+    const page1 = await pdfdoc.pageCreate();
+    pdfdoc.pagePushBack(page1);
+    pdfdoc.save(
+      outputPath,
+      PDFNet.SDFDoc.SaveOptions.e_linearized,
+    );
   };
 
   PDFNetEndpoint(main, outputPath, res);
