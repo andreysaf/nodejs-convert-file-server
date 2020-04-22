@@ -123,9 +123,8 @@ app.get('/convert/:filename', (req, res) => {
 
 app.get('/generate/:filename', (req, res) => {
   const filename = req.params.filename;
-  console.log(filename);
   const outputPath = path.resolve(__dirname, filesPath, `${filename}.pdf`);
-  console.log(outputPath);
+
   const main = async () => {
     const pdfdoc = await PDFNet.PDFDoc.create();
     await pdfdoc.initSecurityHandler();
