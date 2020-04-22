@@ -56,6 +56,13 @@ Returns text from a PDF at a specified page number.
 ##### HTTP Request
 `GET http://localhost:9000/textextract/:filename-:pagenumber`
 
+### Generate PDF
+
+Creates a blank PDF with a single page.
+
+##### HTTP Request
+`GET http://localhost:9000/generate/:filename`
+
 
 
 
