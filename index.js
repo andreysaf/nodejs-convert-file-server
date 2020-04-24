@@ -180,6 +180,33 @@ app.get('/textextract/:filename-:pagenumber', (req, res) => {
   PDFNetEndpoint(main, outputPath, res);
 });
 
+app.get('/replaceContent/:name', (req, res) => {
+  const name = req.params.name.replace('_', ' ');
+  const filename = 'template_letter.pdf'
+
+  const inputPath = path.resolve(__dirname, filesPath, filename);
+  const outputPath = path.resolve(__dirname, filesPath, `${filename}_replaced.pdf`);
+
+  const main = async () => {
+    const pdfdoc = await PDFNet.PDFDoc.createFromFilePath(inputPath);
+    await pdfdoc.initSecurityHandler();
+    const replacer = await PDFNet.ContentReplacer.create();
+    const page = await pdfdoc.getPage(1);
+
+    await replacer.addString('NAME', name);
+    await replacer.addString('Address', '123 Main St, Vancouver, BC CANADA');
+    await replacer.addString('DATE', new Date(Date.now()).toLocaleString());
+    await replacer.process(page);
+
+    pdfdoc.save(
+      outputPath,
+      PDFNet.SDFDoc.SaveOptions.e_linearized,
+    );
+  };
+
+  PDFNetEndpoint(main, outputPath, res);
+});
+
 const PDFNetEndpoint = (main, pathname, res) => {
   PDFNet.runWithCleanup(main)
     .then(() => {
