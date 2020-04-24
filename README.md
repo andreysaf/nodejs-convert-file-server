@@ -1,5 +1,6 @@
 # nodejs-convert-file-server
 Node.js - Convert from MS Office, images to PDF, get thumbnails for file previews, optimize files for quick rendering.
+![Screenshot](https://github.com/andreysaf/nodejs-convert-file-server/blob/master/files/screen.png?raw=true "Screenshot")
 
 Uses Node.js, Express.js and PDFTron Node.js SDK.
 
