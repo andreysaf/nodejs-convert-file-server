@@ -63,6 +63,28 @@ Creates a blank PDF with a single page.
 ##### HTTP Request
 `GET http://localhost:9000/generate/:filename`
 
+### Replace Content in PDF
+
+Creates a blank PDF with a single page.
+
+##### HTTP Request
+`GET http://localhost:9000/replaceContent/:name`
+
+##### Example
+Replaces placeholder strings in the template PDF letter with provided name and returns a ready to be sent file. The `_` replaced with spaces.
+`http://localhost:9000/replaceContent/John_Smith`
+
+### Watermark PDF
+
+Watermarks a PDF document with the provided watermark.
+
+##### HTTP Request
+`GET http://localhost:9000/watermark/:filename-:watermark`
+
+##### Example
+Places a watermark on every page in red. 
+`http://localhost:9000/watermark/webviewer.pdf-awesome`
+
 
 
 
