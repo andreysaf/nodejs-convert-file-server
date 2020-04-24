@@ -207,6 +207,46 @@ app.get('/replaceContent/:name', (req, res) => {
   PDFNetEndpoint(main, outputPath, res);
 });
 
+app.get('/watermark/:filename-:watermark', (req, res) => {
+  const filename = req.params.filename;
+  const watermark = req.params.watermark;
+  let ext = path.parse(filename).ext;
+
+  if (ext !== '.pdf') {
+    res.statusCode = 500;
+    res.end(`File is not a PDF. Please convert it first.`);
+  }
+
+  const inputPath = path.resolve(__dirname, filesPath, filename);
+  const outputPath = path.resolve(__dirname, filesPath, `${filename}_watermarked.pdf`);
+
+  const main = async () => {
+    const pdfdoc = await PDFNet.PDFDoc.createFromFilePath(inputPath);
+    await pdfdoc.initSecurityHandler();
+
+    const stamper = await PDFNet.Stamper.create(
+      PDFNet.Stamper.SizeType.e_relative_scale,
+      0.5,
+      0.5,
+    ); // Stamp size is relative to the size of the crop box of the destination page
+    stamper.setAlignment(
+      PDFNet.Stamper.HorizontalAlignment.e_horizontal_center,
+      PDFNet.Stamper.VerticalAlignment.e_vertical_center,
+    );
+    const redColorPt = await PDFNet.ColorPt.init(1, 0, 0);
+    stamper.setFontColor(redColorPt);
+    const pgSet = await PDFNet.PageSet.createRange(1, await pdfdoc.getPageCount());
+    stamper.stampText(pdfdoc, watermark, pgSet);
+
+    pdfdoc.save(
+      outputPath,
+      PDFNet.SDFDoc.SaveOptions.e_linearized,
+    );
+  };
+
+  PDFNetEndpoint(main, outputPath, res);
+});
+
 const PDFNetEndpoint = (main, pathname, res) => {
   PDFNet.runWithCleanup(main)
     .then(() => {
