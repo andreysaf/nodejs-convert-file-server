@@ -66,7 +66,7 @@ Creates a blank PDF with a single page.
 
 ### Replace Content in PDF
 
-Creates a blank PDF with a single page.
+Replaces a placeholder string in a PDF.
 
 ##### HTTP Request
 `GET http://localhost:9000/replaceContent/:name`
