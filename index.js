@@ -273,3 +273,5 @@ app.listen(port, () =>
     `nodejs-convert-file-server listening at http://localhost:${port}`,
   ),
 );
+
+module.exports = app;
