@@ -4,7 +4,8 @@
   "description": "This is an example how to use PDFTron Custom Server - Node JS SDK",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "nodemon index.js",
+    "test": "mocha --timeout 10000"
   },
   "author": "",
   "license": "ISC",
@@ -12,5 +13,10 @@
     "@pdftron/pdfnet-node": "^7.1.1",
     "express": "^4.17.1",
     "nodemon": "^2.0.3"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
+    "mocha": "^7.1.1"
   }
 }
