@@ -6,12 +6,17 @@ Uses Node.js, Express.js and PDFTron Node.js SDK.
 
 ## Installation
 
-Clone the repo and run
+Clone the repo and run:
 
 `npm start`
 
 The server will be listening on port 9000. `http://localhost:9000`
 
+## Test
+
+To test the proper functionality of the file server, you can run:
+
+`npm test`
 
 ## API Calls
 
