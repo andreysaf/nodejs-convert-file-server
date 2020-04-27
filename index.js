@@ -150,7 +150,7 @@ app.get('/textextract/:filename-:pagenumber', (req, res) => {
   }
 
   const inputPath = path.resolve(__dirname, filesPath, filename);
-  const outputPath = path.resolve(__dirname, filesPath, `${filename}.txt`);
+  const outputPath = path.resolve(__dirname, filesPath, `${filename}-${pageNumber}.txt`);
 
   const main = async () => {
     await PDFNet.initialize();
