@@ -8,6 +8,8 @@ Built with:
 - Express.js
 - PDFTron Node.js SDK
 
+I put together a [get started blog](https://www.pdftron.com/blog/nodejs/generate-pdf-convert-docx-to-pdf-with-nodejs/) to walk through this project.
+
 ## Installation
 
 Clone the repo and run:
