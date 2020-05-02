@@ -16,4 +16,5 @@ module.exports = mimeType = {
     '.doc': 'application/msword',
     '.eot': 'application/vnd.ms-fontobject',
     '.ttf': 'application/x-font-ttf',
+    '.txt': 'text/plain',
   };

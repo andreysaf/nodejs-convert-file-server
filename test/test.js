@@ -53,3 +53,40 @@ describe('/GET thumbnail/filename', () => {
         });
   });
 });
+
+describe('/GET convert/filename', () => {
+  it('it should GET a converted PDF document', (done) => {
+    chai.request(server)
+        .get('/convert/document.docx')
+        .end((err, res) => {
+          chai.expect(res.status).to.equal(200);
+          chai.expect(res.type).to.equal(mimeType['.pdf']);
+          done();
+        });
+  });
+});
+
+describe('/GET generate/filename', () => {
+  it('it should GET a newly generated PDF document', (done) => {
+    chai.request(server)
+        .get('/generate/new')
+        .end((err, res) => {
+          chai.expect(res.status).to.equal(200);
+          chai.expect(res.type).to.equal(mimeType['.pdf']);
+          done();
+        });
+  });
+});
+
+describe('/GET textextract/filename', () => {
+  it('it should GET text from PDF page 1', (done) => {
+    chai.request(server)
+        .get('/textextract/webviewer.pdf-1')
+        .end((err, res) => {
+          chai.expect(res.status).to.equal(200);
+          chai.expect(res.type).to.equal(mimeType['.txt']);
+          chai.expect(res.text).to.equal('6 Important Factors when\nChoosing a PDF Library\nADAM PEZ\n');
+          done();
+        });
+  });
+});
