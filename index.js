@@ -139,7 +139,7 @@ app.get('/generate/:filename', (req, res) => {
   PDFNetEndpoint(main, outputPath, res);
 });
 
-app.get('/textextract/:filename-:pagenumber', (req, res) => {
+app.get('/textExtract/:filename-:pagenumber', (req, res) => {
   const filename = req.params.filename;
   let pageNumber = Number(req.params.pagenumber);
   let ext = path.parse(filename).ext;
