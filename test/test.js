@@ -30,3 +30,26 @@ describe('/GET files', () => {
     });
 });
 
+describe('/GET optimize/filename', () => {
+  it('it should GET optimized PDF file', (done) => {
+    chai.request(server)
+        .get('/optimize/webviewer.pdf')
+        .end((err, res) => {
+          chai.expect(res.status).to.equal(200);
+          chai.expect(res.type).to.equal(mimeType['.pdf']);
+          done();
+        });
+  });
+});
+
+describe('/GET thumbnail/filename', () => {
+  it('it should GET a thumbnail of a PDF file', (done) => {
+    chai.request(server)
+        .get('/thumbnail/webviewer.pdf')
+        .end((err, res) => {
+          chai.expect(res.status).to.equal(200);
+          chai.expect(res.type).to.equal(mimeType['.png']);
+          done();
+        });
+  });
+});
