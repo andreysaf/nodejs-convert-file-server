@@ -2,7 +2,7 @@ process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const server = require('../index.js');
+const server = require('../app.js');
 const mimeType = require('../modules/mimeType');
 
 chai.use(chaiHttp);

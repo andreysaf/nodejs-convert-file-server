@@ -3,7 +3,6 @@ const fs = require('fs');
 const path = require('path');
 const { PDFNet } = require('@pdftron/pdfnet-node');
 const mimeType = require('./modules/mimeType');
-const port = 9000;
 const filesPath = './files';
 
 const app = express();
@@ -267,11 +266,5 @@ const PDFNetEndpoint = (main, pathname, res) => {
       res.end(error);
     });
 };
-
-app.listen(port, () =>
-  console.log(
-    `nodejs-convert-file-server listening at http://localhost:${port}`,
-  ),
-);
 
 module.exports = app;
