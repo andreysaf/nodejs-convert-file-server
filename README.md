@@ -14,7 +14,7 @@ I put together a [get started blog](https://www.pdftron.com/blog/nodejs/generate
 
 Clone the repo and run:
 
-`npm start`
+#### `npm start`
 
 The server will be listening on port 9000. `http://localhost:9000`
 
@@ -22,7 +22,7 @@ The server will be listening on port 9000. `http://localhost:9000`
 
 To test the proper functionality of the file server, you can run:
 
-`npm test`
+#### `npm test`
 
 ## API Calls
 
