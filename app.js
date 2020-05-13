@@ -247,7 +247,7 @@ app.get('/watermark/:filename-:watermark', (req, res) => {
 });
 
 const PDFNetEndpoint = (main, pathname, res) => {
-  PDFNet.runWithCleanup(main, process.env.PDFTRONKEY)
+  PDFNet.runWithCleanup(main) // you can add the key to PDFNet.runWithCleanup(main, process.env.PDFTRONKEY)
     .then(() => {
       PDFNet.shutdown();
       fs.readFile(pathname, (err, data) => {
