@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon server.js",
+    "postinstall": "node tools/copy-pdfnet-lib.js",
     "test": "mocha --timeout 10000"
   },
   "author": "",
@@ -16,6 +17,7 @@
     "nodemon": "^2.0.3"
   },
   "devDependencies": {
+    "fs-extra": "^7.0.1",
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
     "mocha": "^7.1.1"
