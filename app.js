@@ -129,10 +129,13 @@ app.get('/convertHTML/:filename-:htmlPath', (req, res) => {
       await PDFNet.HTML2PDF.setModulePath(
         path.resolve(__dirname, './pdfnet-node/lib/'),
       );
+      const settings = await PDFNet.HTML2PDF.WebPageSettings.create();
+      settings.setAllowJavaScript(true);
+      settings.setProduceForms(true);
+      settings.SetPrintBackground(false);
       const html2pdf = await PDFNet.HTML2PDF.create();
       const pdfdoc = await PDFNet.PDFDoc.create();
-      await pdfdoc.initSecurityHandler();
-      await html2pdf.insertFromUrl('http://www.gutenberg.org/wiki/Main_Page');
+      await html2pdf.insertFromUrl2(inputPath, settings);
       await html2pdf.convert(pdfdoc);
       await pdfdoc.save(outputPath, PDFNet.SDFDoc.SaveOptions.e_linearized);
     } catch (err) {
