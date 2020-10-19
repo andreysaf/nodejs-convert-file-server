@@ -66,6 +66,18 @@ describe('/GET convert/filename', () => {
   });
 });
 
+describe('/GET convertHTML/filename', () => {
+  it('it should GET a converted PDF document from HTML', (done) => {
+    chai.request(server)
+        .get('/convertHTML/myhtml-index.html')
+        .end((err, res) => {
+          chai.expect(res.status).to.equal(200);
+          chai.expect(res.type).to.equal(mimeType['.pdf']);
+          done();
+        });
+  });
+});
+
 describe('/GET generate/filename', () => {
   it('it should GET a newly generated PDF document', (done) => {
     chai.request(server)

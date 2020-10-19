@@ -1,8 +1,10 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+
 const { PDFNet } = require('@pdftron/pdfnet-node');
 const mimeType = require('./modules/mimeType');
+
 const filesPath = './files';
 
 const app = express();
@@ -127,12 +129,11 @@ app.get('/convertHTML/:filename-:htmlPath', (req, res) => {
   const main = async () => {
     try {
       await PDFNet.HTML2PDF.setModulePath(
-        path.resolve(__dirname, './pdfnet-node/lib/'),
+        path.resolve(__dirname, './node_modules/@pdftron/pdfnet-node/lib/'),
       );
       const settings = await PDFNet.HTML2PDF.WebPageSettings.create();
       settings.setAllowJavaScript(true);
       settings.setProduceForms(true);
-      settings.SetPrintBackground(false);
       const html2pdf = await PDFNet.HTML2PDF.create();
       const pdfdoc = await PDFNet.PDFDoc.create();
       await html2pdf.insertFromUrl2(inputPath, settings);
