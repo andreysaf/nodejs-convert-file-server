@@ -1,8 +1,10 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+
 const { PDFNet } = require('@pdftron/pdfnet-node');
 const mimeType = require('./modules/mimeType');
+
 const filesPath = './files';
 
 const app = express();
@@ -111,10 +113,36 @@ app.get('/convert/:filename', (req, res) => {
     const pdfdoc = await PDFNet.PDFDoc.create();
     await pdfdoc.initSecurityHandler();
     await PDFNet.Convert.toPdf(pdfdoc, inputPath);
-    pdfdoc.save(
-      outputPath,
-      PDFNet.SDFDoc.SaveOptions.e_linearized,
-    );
+    pdfdoc.save(outputPath, PDFNet.SDFDoc.SaveOptions.e_linearized);
+  };
+
+  PDFNetEndpoint(main, outputPath, res);
+});
+
+app.get('/convertHTML/:filename-:htmlPath', (req, res) => {
+  const filename = req.params.filename;
+  const htmlPath = req.params.htmlPath;
+
+  const inputPath = path.resolve(__dirname, filesPath, htmlPath);
+  const outputPath = path.resolve(__dirname, filesPath, `${filename}.pdf`);
+
+  const main = async () => {
+    try {
+      await PDFNet.HTML2PDF.setModulePath(
+        path.resolve(__dirname, './node_modules/@pdftron/pdfnet-node/lib/'),
+      );
+      const settings = await PDFNet.HTML2PDF.WebPageSettings.create();
+      settings.setAllowJavaScript(true);
+      settings.setProduceForms(true);
+      const html2pdf = await PDFNet.HTML2PDF.create();
+      const pdfdoc = await PDFNet.PDFDoc.create();
+      await html2pdf.insertFromUrl2(inputPath, settings);
+      await html2pdf.convert(pdfdoc);
+      await pdfdoc.save(outputPath, PDFNet.SDFDoc.SaveOptions.e_linearized);
+    } catch (err) {
+      console.log(err);
+    }
+    
   };
 
   PDFNetEndpoint(main, outputPath, res);
@@ -129,10 +157,7 @@ app.get('/generate/:filename', (req, res) => {
     await pdfdoc.initSecurityHandler();
     const page1 = await pdfdoc.pageCreate();
     pdfdoc.pagePushBack(page1);
-    pdfdoc.save(
-      outputPath,
-      PDFNet.SDFDoc.SaveOptions.e_linearized,
-    );
+    pdfdoc.save(outputPath, PDFNet.SDFDoc.SaveOptions.e_linearized);
   };
 
   PDFNetEndpoint(main, outputPath, res);
@@ -149,7 +174,11 @@ app.get('/textExtract/:filename-:pagenumber', (req, res) => {
   }
 
   const inputPath = path.resolve(__dirname, filesPath, filename);
-  const outputPath = path.resolve(__dirname, filesPath, `${filename}-${pageNumber}.txt`);
+  const outputPath = path.resolve(
+    __dirname,
+    filesPath,
+    `${filename}-${pageNumber}.txt`,
+  );
 
   const main = async () => {
     await PDFNet.initialize();
@@ -168,7 +197,7 @@ app.get('/textExtract/:filename-:pagenumber', (req, res) => {
       let text;
 
       text = await txt.getAsText();
-      fs.writeFile(outputPath, text, (err) => {
+      fs.writeFile(outputPath, text, err => {
         if (err) return console.log(err);
       });
     } catch (err) {
@@ -181,10 +210,14 @@ app.get('/textExtract/:filename-:pagenumber', (req, res) => {
 
 app.get('/replaceContent/:name', (req, res) => {
   const name = req.params.name.replace('_', ' ');
-  const filename = 'template_letter.pdf'
+  const filename = 'template_letter.pdf';
 
   const inputPath = path.resolve(__dirname, filesPath, filename);
-  const outputPath = path.resolve(__dirname, filesPath, `${filename}_replaced.pdf`);
+  const outputPath = path.resolve(
+    __dirname,
+    filesPath,
+    `${filename}_replaced.pdf`,
+  );
 
   const main = async () => {
     const pdfdoc = await PDFNet.PDFDoc.createFromFilePath(inputPath);
@@ -197,10 +230,7 @@ app.get('/replaceContent/:name', (req, res) => {
     await replacer.addString('DATE', new Date(Date.now()).toLocaleString());
     await replacer.process(page);
 
-    pdfdoc.save(
-      outputPath,
-      PDFNet.SDFDoc.SaveOptions.e_linearized,
-    );
+    pdfdoc.save(outputPath, PDFNet.SDFDoc.SaveOptions.e_linearized);
   };
 
   PDFNetEndpoint(main, outputPath, res);
@@ -217,7 +247,11 @@ app.get('/watermark/:filename-:watermark', (req, res) => {
   }
 
   const inputPath = path.resolve(__dirname, filesPath, filename);
-  const outputPath = path.resolve(__dirname, filesPath, `${filename}_watermarked.pdf`);
+  const outputPath = path.resolve(
+    __dirname,
+    filesPath,
+    `${filename}_watermarked.pdf`,
+  );
 
   const main = async () => {
     const pdfdoc = await PDFNet.PDFDoc.createFromFilePath(inputPath);
@@ -234,13 +268,13 @@ app.get('/watermark/:filename-:watermark', (req, res) => {
     );
     const redColorPt = await PDFNet.ColorPt.init(1, 0, 0);
     stamper.setFontColor(redColorPt);
-    const pgSet = await PDFNet.PageSet.createRange(1, await pdfdoc.getPageCount());
+    const pgSet = await PDFNet.PageSet.createRange(
+      1,
+      await pdfdoc.getPageCount(),
+    );
     stamper.stampText(pdfdoc, watermark, pgSet);
 
-    pdfdoc.save(
-      outputPath,
-      PDFNet.SDFDoc.SaveOptions.e_linearized,
-    );
+    pdfdoc.save(outputPath, PDFNet.SDFDoc.SaveOptions.e_linearized);
   };
 
   PDFNetEndpoint(main, outputPath, res);
@@ -261,7 +295,7 @@ const PDFNetEndpoint = (main, pathname, res) => {
         }
       });
     })
-    .catch((error) => {
+    .catch(error => {
       res.statusCode = 500;
       res.end(error);
     });
